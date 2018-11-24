@@ -1,10 +1,7 @@
-import { Component } from '@angular/core';
+import {Component, Input} from '@angular/core';
 import { Injectable } from '@angular/core';
 import { Observable} from 'rxjs';
-import { map } from 'rxjs/operators';
-import { filter } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
-import * as $ from 'jquery';
 
 @Component({
   selector: 'app-root',
@@ -15,18 +12,36 @@ import * as $ from 'jquery';
 export class AppComponent {
   constructor(private http: HttpClient) { }
 
-  configUrl = 'http://www.omdbapi.com/?s=' + this.paramSearch + '&apikey=5731dd3c';
+  configUrl = 'http://www.omdbapi.com/?';
+  apiKey = '&apikey=5731dd3c';
+  // @Input()
   private _paramSearch: string;
   private _results: object[];
+  private _fullResults: object[];
+  private _selected: object;
 
-  getData(): Observable<Array<any>> {
-    return this.http.get<Array<any>>(`${this.configUrl}`);
+  getData(value: string): Observable<Array<any>> {
+    return this.http.get<Array<any>>(`${this.configUrl + value + this.apiKey }`);
   }
 
-  filter() {
-    this.getData().subscribe(res => {
+  filter(value: string) {
+    this.getData('s=' + value).subscribe(res => {
+      this.fullResults = [];
       // @ts-ignore
       this.results = res.Search;
+      for (const movie of this.results) {
+        // @ts-ignore
+        this.getFullData(movie.imdbID);
+      }
+    });
+  }
+
+  getFullData(value: string) {
+    return this.getData('i=' + value).subscribe(res => {
+      // @ts-ignore
+      if (res.Type === 'movie') {
+        this.fullResults.push(res);
+      }
     });
   }
 
@@ -44,5 +59,21 @@ export class AppComponent {
 
   set results(value: object[]) {
     this._results = value;
+  }
+
+  get fullResults(): object[] {
+    return this._fullResults;
+  }
+
+  set fullResults(value: object[]) {
+    this._fullResults = value;
+  }
+
+  get selected(): object {
+    return this._selected;
+  }
+
+  set selected(value: object) {
+    this._selected = value;
   }
 }
