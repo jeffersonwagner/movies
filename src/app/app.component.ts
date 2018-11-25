@@ -76,4 +76,11 @@ export class AppComponent {
   set selected(value: object) {
     this._selected = value;
   }
+
+  onKeyPress(event, value) {
+    if (event.code === 'Enter') {
+      this.filter(value);
+    }
+  }
+
 }
